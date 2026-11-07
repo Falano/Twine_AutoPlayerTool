@@ -1,0 +1,62 @@
+/*Juipor's original version*/
+
+window.AutoPlayer = {
+
+  delay: 50,
+  linkTarget: ".passage .link-internal",
+  endPoints: [/* passages which should stop the exploration */],
+
+  loop() {
+
+    this.logPassage();
+
+    let target = this.getRandom();
+    if (!target || this.endPoints.includes(passage())) {
+      return this.end();
+    }
+
+    target.click();
+
+    setTimeout(() => {
+      this.loop();
+    }, this.delay);
+  },
+
+  logPassage() {
+    this.output.push({
+      title: passage(),
+      text: $(".passage").html()
+    });
+  },
+
+  run() {
+    this.output = [];
+    this.loop();
+  },
+
+  end() {
+    let exp = "";
+    for (let { title, text } of this.output) {
+      text = text.replaceAll("<br>", "\n").replace(/<.+?>/gs, ""); // scrub elements, turn <br> to new lines
+      exp += `\n\nPassage : ${title} \n\n${text}`;
+    }
+
+    this.exportFile(exp);
+  },
+
+  getRandom() {
+    return [...$(this.linkTarget)].random();
+  },
+
+  exportFile(data) {
+    data = new Blob([data], { type: "txt" });
+    const href = URL.createObjectURL(data);
+
+    $("<a>", {
+      href,
+      download: `game-text.txt`
+    })[0].click();
+
+    setTimeout(() => URL.revokeObjectURL(url), 40);
+  }
+};
